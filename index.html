@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <html>
 <title>GRAPH</title>
-<canvas id = "m" width = '600' height = '600'></canvas>
+ 
+
 <img id="Player" src="Scan.png">
 <img id="Level" src="Level.png">
 <style>
@@ -10,9 +11,21 @@ margin:0px;
 overflow:hidden;
   
 }
-
+#wrapper { 
+	display: flex; 
+	justify-content: center;
+	align-items: center;
+} 
+  canvas{
+    border: 5px solid black;
+  }
+img{
+ display: none;
+}
 </style>
-
+ <div id="wrapper"> 
+<canvas id = "m" width = '600' height = '600'></canvas>
+</div> 
         <script type="module">
            var mouseX=0,pmouseX=0,mouseY=0,pmouseY=0,clicked=false,key={};
             window.addEventListener('mousedown', event => {
