@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html>
+<title>GRAPH</title>
+<canvas id = "m" width = '600' height = '600'></canvas>
+<img id="Player" src="Scan.png">
+<img id="Level" src="Level.png">
+<style>
+*{
+margin:0px;  
+overflow:hidden;
+  
+}
+
+</style>
+
+        <script type="module">
+           var mouseX=0,pmouseX=0,mouseY=0,pmouseY=0,clicked=false,key={};
+            window.addEventListener('mousedown', event => {
+            clicked = true;
+         
+            //clicking?
+        });
+        window.addEventListener('mouseup', event => {
+            clicked = false;
+//not clicking so set clicked to false
+        });
+               window.addEventListener("mouseover", event => {
+                pmouseX = mouseX;
+    pmouseY= mouseY
+    mouseX = event.pageX;
+    mouseY = event.pageY;
+});
+window.addEventListener("mousemove", event => {
+    pmouseX = mouseX;
+    pmouseY= mouseY
+    mouseX = event.pageX-2;
+    mouseY = event.pageY;
+ 
+});
+    window.addEventListener("keydown", (event) => {
+    
+    keys[event.key]=true;
+});
+window.addEventListener("keyup", (event) => {
+  
+        
+        delete keys[event.key];
+        
+        
+    
+    
+});
+        for (let i = window.requestAnimationFrame(function() {}); i > 0; i--) {
+    window.cancelAnimationFrame(i);
+}
+ var c = document.getElementById("m")
+
+var ctx = c.getContext("2d");
+var data = ctx.getImageData(0, 0, 600, 600);
+var playerImage=document.getElementById("Player");
+var levelImage=document.getElementById("Level");
+var camlx=0;
+var camly=0;
+var playerx=0;
+var playery=0;
+
+
+var deaths = 0;
+var jump = false;
+var deathTime = 20;
+var dead = false;
+var camX = 200;
+var clicked;
+
+
+//Keys
+var keys = [];
+
+
+//Player
+var Player = function(x,y){
+    this.x = x;
+    this.y = y;
+    this.w = 20;
+    this.h = 20;
+    this.facing=1;
+    this.facingl=1;
+    this.px = 0;
+    this.py = 0;
+    this.hitTimer=20;
+    this.xv = 0;
+    this.yv = 0;
+    this.grav = 0.32;
+    this.animation="idle";
+    this.canJump = false;
+    this.jumpPower = 7.6;
+
+    
+    this.headl={x:0,y:0,r:0};
+    this.bodyl={x:-2,y:6,r:0};
+    this.rarml={x:0,y:7,r:0};
+    this.rhandl={x:7,y:8,r:1.8};
+    this.rshinl={x:3,y:10,r:0};
+    this.rlegl={x:6.9,y:14,r:0};
+
+    this.larml={x:-2,y:6,r:0};
+    this.lhandl={x:-5,y:15,r:-1.8};
+    this.lshinl={x:-3,y:10,r:0};
+    this.llegl={x:-4.4,y:13,r:0};
+
+
+
+    this.head={x:2,y:-2,r:0.5};
+    this.body={x:-2,y:6,r:0};
+    this.rarm={x:4,y:9,r:-1.5};
+    this.rhand={x:7,y:1,r:0.1};
+    this.rshin={x:2,y:9,r:-0.1};
+    this.rleg={x:6,y:11,r:0};
+
+    this.larm={x:1,y:3,r:1.2};
+    this.lhand={x:-6,y:0,r:0.1};
+    this.lshin={x:-3,y:7,r:0.2};
+    this.lleg={x:-6.3,y:11,r:0};
+
+};
+Player.prototype.draw = function() {
+    this.facingl-=(this.facingl-this.facing)/4;
+     ctx.fillStyle="rgb(10,10,10)"
+    ctx.save();
+    ctx.translate(this.x,-this.y);
+   ctx.scale(this.facingl,1);
+   ctx.translate(-this.x+(this.facingl*10+10)-10,this.y);
+
+ 
+  ctx.save();
+   ctx.translate(this.x+this.head.x,this.y+this.head.y);
+   ctx.rotate(this.head.r);
+   ctx.translate(-this.x-this.head.x,-this.y-this.head.y);
+
+    ctx.drawImage(playerImage,480,100,200,200,this.x+this.head.x,this.y+this.head.y,this.w/3,this.h/3);
+    ctx.restore();
+
+
+    ctx.save();
+   ctx.translate(this.x+this.body.x,this.y+this.body.y);
+   ctx.rotate(this.body.r);
+   ctx.translate(-this.x-this.body.x,-this.y-this.body.y);
+    ctx.drawImage(playerImage,470,400,100,200,this.x+this.body.x,this.y+this.body.y,this.w/3,this.h/3);
+    ctx.restore();
+
+
+    ctx.save();
+   ctx.translate(this.x+this.rarm.x,this.y+this.rarm.y);
+   ctx.rotate(this.rarm.r);
+   ctx.translate(-this.x-this.rarm.x,-this.y-this.rarm.y);
+    ctx.drawImage(playerImage,600,400,100,200,this.x+this.rarm.x,this.y+this.rarm.y,this.w/3,this.h/3);
+    ctx.restore();
+
+
+    ctx.save();
+   ctx.translate(this.x+this.rhand.x,this.y+this.rhand.y);
+   ctx.rotate(this.rhand.r);
+   ctx.translate(-this.x-this.rhand.x,-this.y-this.rhand.y);
+    ctx.drawImage(playerImage,750,400,100,200,this.x+this.rhand.x,this.y+this.rhand.y,this.w/3,this.h/3);
+    ctx.restore();
+
+
+    ctx.save();
+   ctx.translate(this.x+this.rshin.x,this.y+this.rshin.y);
+   ctx.rotate(this.rshin.r);
+   ctx.translate(-this.x-this.rshin.x,-this.y-this.rshin.y);
+    ctx.drawImage(playerImage,600,600,100,200,this.x+this.rshin.x,this.y+this.rshin.y,this.w/3,this.h/3);
+    ctx.restore();
+
+
+    ctx.save();
+   ctx.translate(this.x+this.rleg.x,this.y+this.rleg.y);
+   ctx.rotate(this.rleg.r);
+   ctx.translate(-this.x-this.rleg.x,-this.y-this.rleg.y);
+    ctx.drawImage(playerImage,700,790,100,200,this.x+this.rleg.x,this.y+this.rleg.y,this.w/3,this.h/3);
+    ctx.restore();
+
+
+    ctx.save();
+   ctx.translate(this.x+this.larm.x,this.y+this.larm.y);
+   ctx.rotate(this.larm.r);
+   ctx.translate(-this.x-this.larm.x,-this.y-this.larm.y);
+
+    ctx.drawImage(playerImage,400,400,100,200,this.x+this.larm.x,this.y+this.larm.y,this.w/3,this.h/3);
+    ctx.restore();
+
+
+    ctx.save();
+   ctx.translate(this.x+this.lhand.x,this.y+this.lhand.y);
+   ctx.rotate(this.lhand.r);
+   ctx.translate(-this.x-this.lhand.x,-this.y-this.lhand.y);
+    ctx.drawImage(playerImage,250,400,100,200,this.x+this.lhand.x,this.y+this.lhand.y,this.w/3,this.h/3);
+    ctx.restore();
+
+
+    ctx.save();
+   ctx.translate(this.x+this.lshin.x,this.y+this.lshin.y);
+   ctx.rotate(this.lshin.r);
+   ctx.translate(-this.x-this.lshin.x,-this.y-this.lshin.y);
+    ctx.drawImage(playerImage,410,600,100,200,this.x+this.lshin.x,this.y+this.lshin.y,this.w/3,this.h/3);
+    ctx.restore();
+
+
+    ctx.save();
+   ctx.translate(this.x+this.lleg.x,this.y+this.lleg.y);
+   ctx.rotate(this.lleg.r);
+   ctx.translate(-this.x-this.lleg.x,-this.y-this.lleg.y);
+    ctx.drawImage(playerImage,320,850,100,200,this.x+this.lleg.x,this.y+this.lleg.y,this.w/3,this.h/3);
+     ctx.restore();
+     ctx.restore();
+};
+Player.prototype.move = function(){
+    var lerpSpeed=8;
+
+    if(this.animation==="idle"){
+    
+    this.headl={x:0,y:0,r:0};
+    this.bodyl={x:-2,y:6,r:0};
+    this.rarml={x:0,y:7,r:0};
+    this.rhandl={x:7,y:8,r:1.8};
+    this.rshinl={x:3,y:10,r:0};
+    this.rlegl={x:6.9,y:14,r:0};
+
+    this.larml={x:-2,y:6,r:0};
+    this.lhandl={x:-5,y:15,r:-1.8};
+    this.lshinl={x:-3,y:10,r:0};
+    this.llegl={x:-4.4,y:13,r:0};
+    }
+
+    if(this.animation==="jump"){
+       
+        this.headl={x:-2,y:4,r:-1};
+    this.bodyl={x:-2,y:6,r:0};
+    this.rarml={x:4,y:9,r:-1.5};
+    this.rhandl={x:6,y:3,r:-1.1};
+    this.rshinl={x:5,y:9,r:0.6};
+    this.rlegl={x:5,y:13,r:0};
+
+    this.larml={x:1,y:3,r:1.2};
+    this.lhandl={x:-4,y:-2,r:0.7};
+    this.lshinl={x:-4,y:10,r:-0.2};
+    this.llegl={x:-5.4,y:13,r:0};
+    }
+    if(this.animation==="fall"){
+        
+    this.headl={x:2,y:-2,r:0.5};
+    this.bodyl={x:-2,y:6,r:0};
+    this.rarml={x:4,y:9,r:-1.5};
+    this.rhandl={x:7,y:1,r:0.1};
+    this.rshinl={x:2,y:10,r:-0.4};
+    this.rlegl={x:7,y:11,r:0};
+
+    this.larml={x:1,y:3,r:1.2};
+    this.lhandl={x:-6,y:0,r:0.1};
+    this.lshinl={x:0,y:6,r:0.6};
+    this.llegl={x:-6.3,y:10,r:0};
+    }
+    if(true){
+    this.head={x:this.head.x-(this.head.x-this.headl.x)/lerpSpeed,y:this.head.y-(this.head.y-this.headl.y)/lerpSpeed,r:this.head.r-(this.head.r-this.headl.r)/lerpSpeed};
+    this.body={x:this.body.x-(this.body.x-this.bodyl.x)/lerpSpeed,y:this.body.y-(this.body.y-this.bodyl.y)/lerpSpeed,r:this.body.r-(this.body.r-this.bodyl.r)/lerpSpeed};
+    this.rarm={x:this.rarm.x-(this.rarm.x-this.rarml.x)/lerpSpeed,y:this.rarm.y-(this.rarm.y-this.rarml.y)/lerpSpeed,r:this.rarm.r-(this.rarm.r-this.rarml.r)/lerpSpeed};
+    this.rhand={x:this.rhand.x-(this.rhand.x-this.rhandl.x)/lerpSpeed,y:this.rhand.y-(this.rhand.y-this.rhandl.y)/lerpSpeed,r:this.rhand.r-(this.rhand.r-this.rhandl.r)/lerpSpeed};
+    this.rshin={x:this.rshin.x-(this.rshin.x-this.rshinl.x)/lerpSpeed,y:this.rshin.y-(this.rshin.y-this.rshinl.y)/lerpSpeed,r:this.rshin.r-(this.rshin.r-this.rshinl.r)/lerpSpeed};
+    this.rleg={x:this.rleg.x-(this.rleg.x-this.rlegl.x)/lerpSpeed,y:this.rleg.y-(this.rleg.y-this.rlegl.y)/lerpSpeed,r:this.rleg.r-(this.rleg.r-this.rlegl.r)/lerpSpeed};
+
+    this.larm={x:this.larm.x-(this.larm.x-this.larml.x)/lerpSpeed,y:this.larm.y-(this.larm.y-this.larml.y)/lerpSpeed,r:this.larm.r-(this.larm.r-this.larml.r)/lerpSpeed};
+    this.lhand={x:this.lhand.x-(this.lhand.x-this.lhandl.x)/lerpSpeed,y:this.lhand.y-(this.lhand.y-this.lhandl.y)/lerpSpeed,r:this.lhand.r-(this.lhand.r-this.lhandl.r)/lerpSpeed};
+    this.lshin={x:this.lshin.x-(this.lshin.x-this.lshinl.x)/lerpSpeed,y:this.lshin.y-(this.lshin.y-this.lshinl.y)/lerpSpeed,r:this.lshin.r-(this.lshin.r-this.lshinl.r)/lerpSpeed};
+    this.lleg={x:this.lleg.x-(this.lleg.x-this.llegl.x)/lerpSpeed,y:this.lleg.y-(this.lleg.y-this.llegl.y)/lerpSpeed,r:this.lleg.r-(this.lleg.r-this.llegl.r)/lerpSpeed};
+    }
+    if(Math.abs(this.xv)<0.2){
+this.animation="idle";
+    }
+    this.hitTimer-=0.5;
+    if(this.xv>0){
+        this.facing=1;
+    }
+    if(Math.abs(this.xv)>1.5){
+                this.animation="walk";
+            }
+    if(this.xv<0){
+        this.facing=-1;
+    }
+      if(this.yv<-0.1){
+        this.animation="jump";
+    }
+     if(this.yv>0.5){
+        this.animation="fall";
+        if(keys.s){
+           this.animation="dive"; 
+        }
+    }
+ 
+    this.px = this.x;
+    this.py = this.y;
+    
+    this.y += this.yv;
+    this.yv += this.grav;
+    
+    
+    this.x += this.xv;
+ this.xv/=1.31;
+ this.yv/=1.01;
+    
+    if(keys.a&&!keys.s&&!keys.d){
+        this.xv += -0.93;   
+    }
+    if(keys.d&&!keys.s&&!keys.a){
+        this.xv += 0.93;   
+    }
+     if(keys.a&&keys.s&&!keys.d){
+       this.xv*=1.302  
+      
+    }
+    if(keys.s){
+        this.yv+=0.5;
+    }
+    if(!keys.s&&keys[" "]&&this.hitTimer<0){
+        this.xv+=15.0*this.facing;
+        this.hitTimer=20;
+    }
+    if(keys.d&&keys.s&&!keys.a){
+          this.xv*=1.302
+           
+    }
+    if(keys.w && this.canJump){
+        this.yv = -this.jumpPower;
+        this.canJump = false;
+    
+    }
+    if (jump){
+     this.jumpPower = 8.5;
+     this.yv = -this.jumpPower;
+     this.jumpPower = 7.5;
+     jump = false;
+    } 
+    this.canJump = false;
+};
+var player = new Player(200, 200);
+Player.prototype.collide = function(obj){
+  
+    if(obj.checkColl(this)){
+        if(this.py <= obj.y - this.h) {
+            this.y = obj.y - this.h;    
+            this.canJump = true;
+            this.yv=0;
+           
+          
+        }
+        else if(this.px >= obj.x + obj.w) {
+            this.x = obj.x+obj.w;
+            this.xv = 0;
+            this.animation="push";
+             if(obj.type==="ledge"&&this.y-obj.y<0){
+             this.animation="hang";
+              this.yv=0;
+              this.y-=0.1;
+             
+              this.xv=0;
+            this.canJump=true;
+          }
+        }
+        else if(this.px  <= obj.x- this.w) {
+            this.x = obj.x-this.w;
+            this.xv = 0;
+             this.animation="push";
+              if(obj.type==="ledge"&&this.y-obj.y<0){
+             this.animation="hang";
+              this.yv=0;
+              this.y-=0.1;
+              this.xv=0;
+            this.canJump=true;
+          }
+        }
+        else if(this.py >= obj.y + obj.h){
+            this.y = this.py;
+            this.yv = -this.yv/12;
+            this.animation="squish";
+        }  
+    }
+};
+
+//Blocks
+var rectRect = function(x1,y1,w1,h1,x2,y2,w2,h2){
+    return(x1 + w1 > x2 && y1 + h1 > y2 && x1 < x2 + w2 && y1 < y2 + h2);    
+};
+var blocks = [];
+var Block = function(x, y, type){
+this.x = x;
+this.y = y;
+this.w = 20;
+this.h = 20;
+this.type = type;
+
+
+};
+Block.prototype.checkColl = function(obj){
+    return(rectRect(this.x,this.y,this.w,this.h,obj.x,obj.y,obj.w,obj.h));
+};
+Block.prototype.display = function() {
+    switch(this.type){
+        case 'block':
+            ctx.fillStyle="rgb(190,20,40)"
+       //     ctx.fillRect(this.x,this.y,this.w, this.h);
+        break;
+        case 'portal':
+             ctx.fillStyle="rgb(255,255,255)"
+             ctx.beginPath();
+      //      ctx.ellipse(this.x+10,this.y+10,this.w,this.h,0,0,Math.PI*2);
+       ctx.fill();
+        break;
+        case 'ledge':
+          ctx.fillStyle="rgb(190,20,40)"
+        //    ctx.fillRect(this.x,this.y,this.w, this.h);
+        break;
+        case 'spike':
+          ctx.fillStyle="rgb(290,20,40)"
+          //  ctx.fillRect(this.x,this.y,this.w, this.h);
+        break;
+      
+    }
+};
+
+//The Levels
+var level = 0;
+var levels = [
+    [
+        'bbbbbbbbbbbbbbbbbbb..................................................................................',
+        'b...........vvvvvvvbbbbbb............................................................................',
+        'b.......................b............................................................................',
+        'b.......................b............................................................................',
+        'b.......................b............................................................................',
+        'b.......................b............................................................................',
+        'b.......................bbbbbbbbbbbbbbbbbbbbbb.......................................................',
+        'bP.......bbbb.....bbbb...b...b...............b.......................................................',
+        'bbbbb.................b...b..b...............b.......................................................',
+        '.......................b...b.b..............@b.......................................................',
+        '........................b...bb...........bbbbb.......................................................',
+        '.........................b...b.......................................................................',
+        '..........................b..........................................................................',
+        '...........................bbbbb.....................................................................',
+        '.....................................................................................................',
+        '.....................................................................................................',
+        '.....................................................................................................',
+        '.....................................................................................................',
+        '.....................................................................................................',
+        '.....................................................................................................',
+        '.....................................................................................................'
+        
+    ]
+];
+
+//Draw the Levels
+var drawLevel = function(){
+    blocks = [];
+    for(var i = 0; i < levels[level].length;i++){    
+        for(var j = 0; j < levels[level][i].length;j++){
+            switch(levels[level][i][j]){
+                case 'b':
+                    blocks.push(new Block(j*20,i*20,'block'));
+                break;
+                case 'P':
+                    player.x = j*20;
+                    player.y = i*20;
+                break;
+                case '@':
+                    blocks.push(new Block(j*20,i*20,'portal'));
+                break;
+                case 'l':
+                    blocks.push(new Block(j*20,i*20,'ledge'));
+                break;
+                case 'v':
+                    blocks.push(new Block(j*20,i*20,'spike'));
+                break;
+               
+            }
+        }
+    }
+};
+drawLevel();
+
+//The Scenes
+
+function drawGame(){
+    ctx.fillStyle="rgb(255,255,255)"
+    
+  ctx.fillRect(0,0,600,600);
+    ctx.save();
+    camlx+=(player.x-camlx)/9;
+    camly+=(player.y-camly)/9;
+    playerx=player.x;
+    playery=player.y;
+     ctx.scale(2,2);
+    ctx.translate(camX-camlx-50, 250-camly-80);
+    ctx.drawImage(levelImage,20,0,5584,1711,0,0,46*20,14*20)
+   
+    if (!dead){
+    player.draw();
+    player.move();
+    }
+    if (dead){
+        deathTime--;
+        if (deathTime <= 0){
+            drawLevel();
+            deathTime = 20;
+            dead = false;
+            camX = 200;
+        }
+    }
+    
+   
+    for(var i = 0; i < blocks.length; i ++){
+        blocks[i].display();
+        if(blocks[i].type === 'block'||blocks[i].type === 'ledge'){
+            player.collide(blocks[i]);
+        }
+        if(blocks[i].checkColl(player)){
+            switch(blocks[i].type){
+                case 'portal':
+                    level++;
+                    drawLevel();
+                break;
+                case 'spike':
+              
+                    drawLevel();
+                break;
+               
+            } 
+        }
+    }
+    
+    
+  ctx.fillStyle="rgb(0,0,0)"
+
+    if (player.y > 3000){
+        drawLevel();
+    }    
+    ctx.restore();
+}
+
+//Compiling the Scenes
+var frameCount=0;
+ function draw(){
+  frameCount++;
+        drawGame();
+      
+    
+
+    clicked = false;
+
+ 
+//]  
+
+
+  window.requestAnimationFrame(draw);
+}
+
+draw();
+
+//add beginning carbon atom zoom to player
+//add hand drawn you win screen that has hand.
+
+//possible level text:
+
+
+
+//They say that life is made from carbon
+
+//I dont think this is what they meant
+
+//But what is stopping the stroke of a pencil from life?
+
+//Of course, life is only what we perceive as living, breathing, and dying
+
+//And fictional characters can become as much of a part of our lives as other people
+
+//The only thing need is creativity,
+
+//Because life is complicated
+
+
+//<script>
+   
+ 
+</script> 
+</html>
